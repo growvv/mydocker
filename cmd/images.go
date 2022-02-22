@@ -7,19 +7,21 @@ package cmd
 import (
 	"fmt"
 
+	"mydocker/internal"
+
 	"github.com/spf13/cobra"
 )
 
 // imagesCmd represents the images command
 var imagesCmd = &cobra.Command{
-	Use:   "images",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:                   "images",
+	Short:                 "List local images",
+	DisableFlagsInUseLine: true,
+	SilenceUsage:          true,
+	Args:                  cobra.NoArgs,
+	PreRunE:               isRoot,
+	RunE:                  internal.Images,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("images called")
 	},

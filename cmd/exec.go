@@ -6,26 +6,33 @@ package cmd
 
 import (
 	"fmt"
+	"mydocker/internal"
 
 	"github.com/spf13/cobra"
 )
 
-// execCmd represents the exec command
-var execCmd = &cobra.Command{
-	Use:   "exec",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("exec called")
-	},
-}
-
 func init() {
+
+	// execCmd represents the exec command
+	var detach bool
+	var execCmd = &cobra.Command{
+		Use:                   "exec [OPTIONS] CONTAINER COMMAND [ARG...]",
+		Short:                 "Run a command inside a existing Container.",
+		DisableFlagsInUseLine: true,
+		SilenceUsage:          true,
+		Args:                  cobra.MinimumNArgs(2),
+		PreRunE:               isRoot,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return internal.Exec(args[0], args[1:], detach)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("exec called")
+		},
+	}
+
+	flags := execCmd.Flags()
+	flags.BoolVarP(&detach, "detach", "d", false, "run command in the background")
+
 	rootCmd.AddCommand(execCmd)
 
 	// Here you will define your flags and configuration settings.

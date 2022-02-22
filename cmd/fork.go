@@ -6,26 +6,58 @@ package cmd
 
 import (
 	"fmt"
+	"mydocker/internal"
+	"mydocker/pkg/container"
 
 	"github.com/spf13/cobra"
 )
 
 // forkCmd represents the fork command
-var forkCmd = &cobra.Command{
-	Use:   "fork",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("fork called")
-	},
-}
+// NewForkCommand implements and returns fork command.
+// fork command is called by reexec to apply namespaces.
+//
+// It is a hidden command and requires root path and
+// container id to run.
 
 func init() {
+	ctr := container.NewContainer()
+	var detach bool
+
+	var forkCmd = &cobra.Command{
+
+		Use:          "fork",
+		Short:        " It is a hidden command and requires root path and container id to run",
+		Hidden:       true,
+		SilenceUsage: true,
+		PreRunE:      isRoot,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := ctr.LoadConfig(); err != nil {
+				return err
+			}
+			return internal.Fork(ctr, args, detach)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("fork called")
+		},
+	}
+
+	flags := forkCmd.Flags()
+	flags.StringVar(&ctr.Digest, "container", "", "")
+	flags.StringVar(&ctr.RootFS, "root", "", "")
+	flags.StringVar(&ctr.Config.Hostname, "host", "", "")
+	flags.BoolVar(&detach, "detach", false, "")
+	mem := flags.Int("memory", 100, "")
+	swap := flags.Int("swap", 20, "")
+	cpu := flags.Float64("cpus", 1, "")
+	pids := flags.Int("pids", 128, "")
+	ctr.SetMemorySwapLimit(*mem, *swap)
+	ctr.SetCPULimit(*cpu)
+	ctr.SetProcessLimit(*pids)
+
+	forkCmd.MarkFlagRequired("root")
+	forkCmd.MarkFlagRequired("container")
+
 	rootCmd.AddCommand(forkCmd)
 
 	// Here you will define your flags and configuration settings.

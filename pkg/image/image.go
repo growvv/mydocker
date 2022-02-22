@@ -2,6 +2,7 @@ package image
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -33,14 +34,18 @@ func NewImage(src string) (*Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	img, err := crane.Pull(tag.Name())
+	fmt.Printf("Pulling %s\n", tag)
+	img, err := crane.Pull(tag.Name()) // alpine,ubuntu可以，nginx,python,mysql不行
+	fmt.Printf("Pulling after %s\n", tag)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("get digest before\n")
 	digest, err := img.Digest()
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("get digest after\n")
 	newImage := &Image{
 		Image:      img,
 		ID:         digest.Hex,

@@ -7,25 +7,34 @@ package cmd
 import (
 	"fmt"
 
+	"mydocker/internal"
+
 	"github.com/spf13/cobra"
 )
 
-// runCmd represents the run command
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("run called")
-	},
-}
-
 func init() {
+	// runCmd represents the run command
+	var runCmd = &cobra.Command{
+		Use:                   "run [OPTIONS] IMAGE [COMMAND] [ARG...]",
+		Short:                 "Run a command inside a new Container.",
+		DisableFlagsInUseLine: true,
+		SilenceUsage:          true,
+		Args:                  cobra.MinimumNArgs(1),
+		PreRunE:               isRoot,
+		RunE:                  internal.Run,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("run called")
+		},
+	}
+
+	flags := runCmd.Flags()
+	flags.StringP("host", "", "", "Container Hostname")
+	flags.IntP("memory", "m", 100, "Limit memory access in MB")
+	flags.IntP("swap", "s", 20, "Limit swap access in MB")
+	flags.Float64P("cpus", "c", 2, "Limit CPUs")
+	flags.IntP("pids", "p", 128, "Limit number of processes")
+	flags.BoolP("detach", "d", false, "run command in the background")
+
 	rootCmd.AddCommand(runCmd)
 
 	// Here you will define your flags and configuration settings.
