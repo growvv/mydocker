@@ -33,6 +33,11 @@
 mydocker run alpine /bin/sh
 mydocker run alpine # 效果同上，因为默认的命令是/bin/sh
 ```
+输出:
+```
+/ # 
+```
+
 2. 查看当前所有容器 
 ```bash
 mydocker ps
