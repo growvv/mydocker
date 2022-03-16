@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"fmt"
 	"syscall"
 
 	"github.com/pkg/errors"
@@ -28,6 +29,7 @@ func Mount(mountOpts ...MountOption) (Unmounter, error) {
 	}
 
 	for _, p := range mountOpts {
+		fmt.Println("p: ", p)
 		if err := syscall.Mount(p.Source, p.Target, p.Type, p.Flag, p.Option); err != nil {
 			return unmounter, errors.Wrapf(err, "unable to mount %s to %s", p.Source, p.Target)
 		}

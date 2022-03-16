@@ -1,6 +1,7 @@
 package container
 
 import (
+	"fmt"
 	"io/ioutil"
 	"mydocker/pkg/filesystem"
 	"mydocker/pkg/image"
@@ -76,6 +77,7 @@ func (c *Container) MountFromImage(img *image.Image) (filesystem.Unmounter, erro
 	layers := make([]string, 0)
 	for i := range imgLayers {
 		digest, err := imgLayers[i].Digest()
+		fmt.Println(i, digest)
 		if err != nil {
 			return nil, err
 		}

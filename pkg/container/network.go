@@ -15,6 +15,7 @@ func (c *Container) SetupNetwork(bridge string) (filesystem.Unmounter, error) {
 	vethName := fmt.Sprintf("veth%.7s", c.Digest)
 	peerName := fmt.Sprintf("P%s", vethName)
 	masterName := "vessel0"
+	fmt.Println(vethName, peerName, masterName)
 
 	if err := network.SetupVirtualEthernet(vethName, peerName); err != nil {
 		return nil, err

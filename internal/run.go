@@ -17,31 +17,43 @@ import (
 
 // Run runs a command inside a new container.
 func Run(cmd *cobra.Command, args []string) error {
+	fmt.Println("start new container")
 	ctr := container.NewContainer()
 	defer ctr.Remove()
+	fmt.Println("end new container")
 
 	// setup bridge
+	fmt.Println("start setup bridge")
 	if err := network.SetupBridge("vessel0"); err != nil {
 		return err
 	}
+	fmt.Println("end setup bridge")
 
 	// setup network
+	fmt.Println("start setup network")
 	deleteNetwork, err := ctr.SetupNetwork("vessel0")
 	if err != nil {
 		return err
 	}
 	defer deleteNetwork()
+	fmt.Println("end setup network")
 
 	// setup filesystem from image
+	fmt.Println("start get image")
 	img, err := getImage(args[0])
+	fmt.Println("image: ", img)
 	if err != nil {
 		return err
 	}
+	fmt.Println("end get image")
+
+	fmt.Println("start mount from image")
 	unmount, err := ctr.MountFromImage(img)
 	if err != nil {
 		return errors.Wrap(err, "can't Mount image filesystem")
 	}
 	defer unmount()
+	fmt.Println("end mount from image")
 
 	// Format fork options
 	options := append([]string{}, rawFlags(cmd.Flags())...)
@@ -50,6 +62,7 @@ func Run(cmd *cobra.Command, args []string) error {
 	newArgs := []string{"fork"}
 	newArgs = append(newArgs, options...)
 	newArgs = append(newArgs, args[1:]...)
+	fmt.Println("newArgs: ", newArgs)
 	newCmd := reexec.Command(newArgs...)
 	newCmd.Stdin, newCmd.Stdout, newCmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	newCmd.SysProcAttr = &syscall.SysProcAttr{

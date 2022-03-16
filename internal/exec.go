@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,23 +30,31 @@ func Exec(ctrDigest string, args []string, detach bool) error {
 		return errors.Errorf("container %s is not running", ctr.Digest)
 	}
 
+	fmt.Println(ctr)
+
+	fmt.Println("start set namespace")
 	err = setNamespace(ctr.Pids[0], syscall.CLONE_NEWUTS|syscall.CLONE_NEWIPC|syscall.CLONE_NEWPID|syscall.CLONE_NEWNET)
 	if err != nil {
 		return err
 	}
+	fmt.Println("end set namespace")
 
+	fmt.Println("start change rootfs")
 	if err := changeRoot(ctr.RootFS, ctr.Config.WorkingDir); err != nil {
 		return err
 	}
+	fmt.Println("end change rootfs")
 
 	mountPoints := []filesystem.MountOption{
 		{Source: "proc", Target: "proc", Type: "proc"},
 		{Source: "sysfs", Target: "sys", Type: "sysfs"},
 	}
+	fmt.Println("start mount")
 	unmounter, err := filesystem.Mount(mountPoints...)
 	if err != nil {
 		return err
 	}
+	fmt.Println("end mount")
 	defer unmounter()
 
 	newCmd := exec.Command(args[0], args[1:]...)
